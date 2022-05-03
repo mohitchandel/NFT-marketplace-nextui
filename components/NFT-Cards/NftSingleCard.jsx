@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
-import { Card, Col, Row, Button, Text, Modal, Link, Image, textWeights } from "@nextui-org/react";
+import { Card, Col, Row, Button, Text, Modal, Image, Loading } from "@nextui-org/react";
 import { CONTRACT } from "../../secret.json";
 import NFTMarket from '../../artifacts/contracts/NFTMarket.sol/NFTMarket.json';
 import { ethers } from 'ethers'
+import Swal from 'sweetalert2'
 
 
 export default function NftSingleCard({ id }) {
+
+    const [isLoading, setIsLoading] = useState(false)
 
     const [itemId, setItemId] = useState()
     const [itemName, setItemName] = useState()
@@ -23,13 +26,10 @@ export default function NftSingleCard({ id }) {
         console.log("closed");
     };
 
-    useEffect(() => {
-        async function getSingleItem() {
-            const provider = new ethers.providers.Web3Provider(window.ethereum)
-            const signer = provider.getSigner()
-            const accountAddress = await signer.getAddress()
-            setWalletAddress(accountAddress)
-            let contract = new ethers.Contract(CONTRACT, NFTMarket.abi, signer)
+    async function getSingleItems() {
+        const provider = new ethers.providers.Web3Provider(window.ethereum)
+        try {
+            let contract = new ethers.Contract(CONTRACT, NFTMarket.abi, provider)
             let item = await contract.getSingleItem(id)
             setItemId(item[id].itemId)
             setItemDescription(item[id].description)
@@ -37,39 +37,72 @@ export default function NftSingleCard({ id }) {
             setItemOwner(item[id].owner)
             setItemPrice(ethers.utils.formatEther(item[id].price))
             setItemUrl(item[id].tokenURI)
+        } catch (err) {
+            Swal.fire({
+                title: 'Error!',
+                text: err.message,
+                icon: 'error',
+                confirmButtonText: 'Close',
+            })
         }
-        getSingleItem()
+    }
+
+    async function getWalletAddress() {
+        try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum)
+            const signer = provider.getSigner()
+            const address = await signer.getAddress()
+            setWalletAddress(address)
+
+        } catch (err) {
+            console.log(err)
+            console.log(walletAddress)
+        }
+    }
+
+    useEffect(() => {
+        getSingleItems()
+        getWalletAddress()
     }, [])
 
     async function buyNft() {
-        const provider = new ethers.providers.Web3Provider(window.ethereum)
-        const signer = provider.getSigner()
-        let contract = new ethers.Contract(CONTRACT, NFTMarket.abi, signer)
-        let balance = await provider.getBalance(await signer.getAddress());
-        const value = ethers.utils.parseEther(itemPrice)
-        if(ethers.utils.formatEther(balance) < value){
-            alert("not enough funds")
-            return
+        setIsLoading(true)
+        try {
+            const provider = new ethers.providers.Web3Provider(window.ethereum)
+            const signer = provider.getSigner()
+            let contract = new ethers.Contract(CONTRACT, NFTMarket.abi, signer)
+            let balance = await provider.getBalance(await signer.getAddress());
+            const nftPriceValue = ethers.utils.parseEther(itemPrice)
+            if (Number(balance) < Number(nftPriceValue)) {
+                alert("not enough funds")
+                return
+            }
+            let tx = await contract.buyItem(itemId, { value: nftPriceValue })
+            await tx.wait()
+            closeHandler()
+            Swal.fire({
+                title: 'Success',
+                html: `Transaction successfully <br><a href="https://rinkeby.etherscan.io/tx/${tx.hash}"><u>view on explorer</u></a> `,
+                icon: 'Success',
+                confirmButtonText: 'Done',
+            })
+            setIsLoading(false)
+        } catch (err) {
+            closeHandler()
+            Swal.fire({
+                title: 'Error!',
+                text: err.message,
+                icon: 'error',
+                confirmButtonText: 'Close',
+            })
+            setIsLoading(false)
         }
-        let tx = await contract.buyItem(itemId, { value: value })
-        await tx.wait()
     }
 
     return (
         <>
             <Card cover css={{ w: "100%", p: 0 }}>
                 <Card.Header css={{ position: "absolute", zIndex: 1, top: 5 }}>
-                    <Col>
-                        <Text size={12} weight="bold" transform="uppercase" color="#9E9E9E">
-                            {itemName}
-                        </Text>
-                        <Text size={12} p color="white">
-                            {itemDescription}
-                        </Text>
-                        <Text size={10} color="white">
-                            Owner : {itemOwner}
-                        </Text>
-                    </Col>
                 </Card.Header>
                 <Card.Body>
                     <Card.Image
@@ -82,32 +115,27 @@ export default function NftSingleCard({ id }) {
                 <Card.Footer
                     blur
                     css={{
+                        backgroundColor: "#000",
                         position: "absolute",
-                        bgBlur: "#0f1114",
+                        bgBlur: "#000",
                         borderTop: "$borderWeights$light solid $gray700",
                         bottom: 0,
                         zIndex: 1,
                     }}
                 >
                     <Row>
-                        <Col>
-                            <Row>
-                                <Col>
-                                    <Text color="#d1d1d1" size={12}>
-                                        Price :
-                                    </Text>
-                                    <Text color="#d1d1d1" size={12}>
-                                        {Number(itemPrice)} ETH
-                                    </Text>
-                                </Col>
-                            </Row>
+                        <Col css={{ marginTop: "1%" }} bottom={0}>
+                            <Text size={12} transform="uppercase" color="#fff">
+                                {itemName}
+                            </Text>
+                            <Text weight={"bold"} justify="center" color="success" size={12}>
+                                {Number(itemPrice)} ETH
+                            </Text>
                         </Col>
                         <Col>
                             <Row justify="flex-end">
-                                <Button.Group color="gradient" ghost>
+                                <Button.Group color="success" >
                                     <Button
-                                        flat
-                                        auto
                                         rounded
                                         onClick={handler}
                                     >
@@ -120,38 +148,28 @@ export default function NftSingleCard({ id }) {
                                             View NFT
                                         </Text>
                                     </Button>
-                                    {walletAddress == itemOwner ?
+                                    {walletAddress != itemOwner && walletAddress ?
                                         <Button
-                                            flat
-                                            auto
-                                            rounded
-                                            disabled
-                                            color="error"
-                                        >
-                                            <Text
-                                                css={{ color: "inherit" }}
-                                                size={12}
-                                                weight="bold"
-                                                transform="uppercase"
-                                            >
-                                                Already Owned
-                                            </Text>
-                                        </Button>
-                                        : <Button
+                                            disabled={isLoading}
                                             flat
                                             auto
                                             rounded
                                             onClick={buyNft}
                                         >
-                                            <Text
-                                                css={{ color: "inherit" }}
-                                                size={12}
-                                                weight="bold"
-                                                transform="uppercase"
-                                            >
-                                                Buy NFT
-                                            </Text>
-                                        </Button>}
+                                            {isLoading ?
+                                                <Loading color="currentColor" size="sm" />
+                                                :
+                                                <Text
+                                                    css={{ color: "inherit" }}
+                                                    size={12}
+                                                    weight="bold"
+                                                    transform="uppercase"
+                                                >
+                                                    Buy NFT
+                                                </Text>
+                                            }
+                                        </Button>
+                                        : ""}
                                 </Button.Group>
                             </Row>
                         </Col>
@@ -159,37 +177,57 @@ export default function NftSingleCard({ id }) {
                 </Card.Footer>
             </Card>
 
-            <Modal noPadding open={visible} onClose={closeHandler}>
+            <Modal
+                css={{ padding: "10px" }}
+                blur
+                aria-labelledby="modal-title"
+                noPadding
+                open={visible}
+                onClose={closeHandler}
+            >
                 <Modal.Header>
-                    <Text id="modal-title" size={18}>
-                        <Text b size={18}>
-                            {itemName}
-                        </Text>
+                    <Text h2 id="modal-title" >
+                        {itemName}
                     </Text>
                 </Modal.Header>
-                <Modal.Body>
-                    <Text size={10} id="modal-description">
-                        {itemDescription}
-                    </Text>
-                    <Image
-                        showSkeleton
-                        src={itemUrl}
-                        width={400}
-                        height={490}
-                    />
+                <Modal.Body >
+                    <Row justify="center">
+                        <Text id="modal-description">
+                            {itemDescription}
+                        </Text>
+                    </Row>
+                    <Row justify={"center"}>
+                        <Text size={12} id="modal-description">
+                            Owner: {itemOwner}
+                        </Text>
+                    </Row>
+                    <Row>
+                        <Image
+                            showSkeleton
+                            src={itemUrl}
+                        />
+                    </Row>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Row gap={1}>
-                        <Col>
-                            <Text justify="center" size={12}>
-                                Price : {itemPrice} ETH
-                            </Text>
-                        </Col>
+                    <Row>
                         <Col >
-                            <Row justify="flex-end">
-                                <Button onClick={buyNft} auto>
-                                    Buy NFT
-                                </Button>
+                            <Row justify="center">
+                                {isLoading
+                                    ?
+                                    <Button disabled auto>
+                                        <Loading color="currentColor" size="sm" />
+                                    </Button>
+                                    :
+                                    <Button
+                                        disabled={walletAddress && walletAddress != itemOwner ? false : true}
+                                        color={"success"}
+                                        onClick={buyNft}
+                                        auto
+                                    >
+                                        Buy For {itemPrice} ETH
+                                    </Button>
+                                }
+
                             </Row>
                         </Col>
                     </Row>

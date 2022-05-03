@@ -1,7 +1,10 @@
 {
     "cSpell.words": [
         "createitem",
+        "imgfile",
         "ipfs",
-        "mynfts"
+        "mynfts",
+        "Swal",
+        "sweetalert"
     ]
 }
