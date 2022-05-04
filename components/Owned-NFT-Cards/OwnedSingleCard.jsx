@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { Card, Col, Row, Button, Text, Modal, Input, Loading } from "@nextui-org/react";
-import { CONTRACT } from "../../secret.json";
-import NFTMarket from '../../artifacts/contracts/NFTMarket.sol/NFTMarket.json';
+import { useEffect, useState } from "react"
+import { Card, Col, Row, Button, Text, Modal, Input, Loading } from "@nextui-org/react"
+import { CONTRACT } from "../../secret.json"
+import NFTMarket from '../../artifacts/contracts/NFTMarket.sol/NFTMarket.json'
 import { ethers } from 'ethers'
 import Swal from 'sweetalert2'
 import { useRouter } from 'next/router'
@@ -45,8 +45,9 @@ export default function OwnedSingleCard({ id }) {
 
     async function resellNft() {
         setIsLoading(true)
-        if (priceValue < 0.1 || !priceValue) {
+        if (!(priceValue > 0)) {
             alert("please add price")
+            setIsLoading(false)
             return
         }
         const price = ethers.utils.parseUnits(priceValue, 'ether')
@@ -161,7 +162,7 @@ export default function OwnedSingleCard({ id }) {
                 <Modal.Body>
                     <Input
                         clearable
-                        type="number"
+                        inputted="numeric"
                         bordered
                         fullWidth
                         color="primary"

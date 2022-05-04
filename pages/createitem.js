@@ -1,12 +1,11 @@
-import { useState, useEffect } from 'react';
-import { Container, Input, Row, Button, Loading } from "@nextui-org/react";
+import { useState, useEffect } from 'react'
+import { Container, Input, Row, Button, Loading } from "@nextui-org/react"
 import Navigation from "../components/Navigation"
 import { create } from 'ipfs-http-client'
 import { ethers } from 'ethers'
-import { CONTRACT } from "../secret.json";
+import { CONTRACT } from "../secret.json"
 import Swal from 'sweetalert2'
 import { useRouter } from 'next/router'
-
 import NFTMarket from '../artifacts/contracts/NFTMarket.sol/NFTMarket.json'
 
 const ipfsClient = create('https://ipfs.infura.io:5001/api/v0')
@@ -61,7 +60,7 @@ export default function MyNfts() {
         const name = e.target.elements.name.value
         const desc = e.target.elements.desc.value
         const price = e.target.elements.price.value
-        if (price < 0.1) {
+        if (!(price > 0)) {
             setIsLoading(false)
             alert("Price should be greater than 0")
             return;
@@ -83,7 +82,9 @@ export default function MyNfts() {
                 html: `Transaction successfully <br><a href="https://rinkeby.etherscan.io/tx/${tx.hash}"><u>view on explorer</u></a> `,
                 icon: 'Success',
                 confirmButtonText: 'Done',
-            })
+            }).then(
+                router.push('/')
+            )
             setIsLoading(false)
         } catch (err) {
             console.log(err.message)
@@ -95,7 +96,6 @@ export default function MyNfts() {
             })
             setIsLoading(false)
         }
-        router.push('/')
     }
 
     return (
@@ -128,12 +128,13 @@ export default function MyNfts() {
                     </Row>
                     <Row css={{ padding: "30px 0" }} justify="center">
                         <Input
+                            initialValue={0.001}
+                            inputted="numeric"
                             size="lg"
                             bordered
                             name="price"
                             label="Price (ETH)"
                             color="#7928ca"
-                            type="number"
                             helperText="Please enter NFT price"/>
 
                     </Row>

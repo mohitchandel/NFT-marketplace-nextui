@@ -1,56 +1,92 @@
+import { useEffect } from "react"
 import { ethers } from "ethers"
-import { useState } from "react";
-import { Container, Button, Row, Text, Col, Grid } from "@nextui-org/react";
+import { useState } from "react"
+import { Button, Row, Text, Col, Grid, Image } from "@nextui-org/react"
 import Link from 'next/link'
-import { useEffect } from "react";
+import Swal from 'sweetalert2'
 
+export default function Navigation() {
 
-
-const Navigation = () => {
-
-    const [address, setAddress] = useState('');
+    const [address, setAddress] = useState()
+    const [isConnected, setIsConnected] = useState(false)
 
     async function askToChangeNetwork() {
         if (window.ethereum) {
-            try {
-                await window.ethereum.request({
-                    method: 'wallet_switchEthereumChain',
-                    params: [{ chainId: '0x4' }],
-                });
-            } catch (error) {
-                if (error.code === 4902) {
-                    try {
-                        await window.ethereum.request({
-                            method: 'wallet_addEthereumChain',
-                            params: [
-                                {
-                                    chainId: '0x4',
-                                    rpcUrl: 'https://rinkeby.infura.io/v3/',
-                                },
-                            ],
-                        });
-                    } catch (addError) {
-                        console.error(addError);
+            const targetNetworkId = '0x4';
+            const chainId = 4;
+            if (window.ethereum.networkVersion != chainId) {
+                Swal.fire({
+                    title: 'Warning',
+                    text: "This Dapp only runs on Rinkeby Testnet",
+                    icon: 'warning',
+                })
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: targetNetworkId }],
+                    });
+                } catch (error) {
+                    if (error.code === 4902) {
+                        try {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [
+                                    {
+                                        chainId: targetNetworkId,
+                                        rpcUrl: 'https://rinkeby.infura.io/v3/',
+                                    },
+                                ],
+                            });
+                        } catch (addError) {
+                            console.error(addError);
+                        }
                     }
+                    console.error(error);
                 }
-                console.error(error);
             }
         } else {
             alert('MetaMask is not installed');
         }
     }
 
+    async function onChainChange() {
+        if (window.ethereum) {
+            await window.ethereum.on('chainChanged', chainId => {
+                askToChangeNetwork()
+                window.location.reload();
+            })
+        }
+    }
+
+    async function onAccountChange() {
+        await window.ethereum.on('accountsChanged', function (accounts) {
+            window.location.reload();
+        });
+    }
+
+    async function checkForConnection() {
+        const provider = new ethers.providers.Web3Provider(window.ethereum)
+        await provider.send("eth_requestAccounts", [])
+        const signer = provider.getSigner()
+        const accountAddress = await signer.getAddress()
+        accountAddress ? setIsConnected(true) : setIsConnected(false)
+    }
+
     useEffect(() => {
+        onChainChange()
         askToChangeNetwork()
+        onAccountChange()
+        checkForConnection()
     }, [])
 
-    const connectWallet = async () => {
+    async function connectWallet() {
         if (typeof window !== 'undefined') {
             const provider = new ethers.providers.Web3Provider(window.ethereum)
             await provider.send("eth_requestAccounts", [])
             const signer = provider.getSigner()
             const accountAddress = await signer.getAddress()
             setAddress(accountAddress)
+            accountAddress ? setIsConnected(true) : setIsConnected(false)
         } else {
             alert("please Install metamask")
         }
@@ -85,10 +121,21 @@ const Navigation = () => {
                             </Text>
                         </Grid>
                         <Grid xs={2}>
-                            {address ?
-                                <Button disabled>Connected</Button>
+                            {isConnected ?
+                                <Button disabled>
+                                    <Image
+                                        width={20}
+                                        src="https://cdn.iconscout.com/icon/free/png-256/metamask-2728406-2261817.png"/>
+                                    <Text>Connected</Text>
+                                </Button>
                                 :
-                                <Button size={"sm"} color={"success"} onClick={connectWallet}>Connect</Button>
+                                <Button
+                                    size={"sm"} color={"success"} onClick={connectWallet}>
+                                    <Image
+                                        width={20}
+                                        src="https://cdn.iconscout.com/icon/free/png-256/metamask-2728406-2261817.png"/>
+                                    <Text>Connect</Text>
+                                </Button>
                             }
                         </Grid>
                     </Grid.Container>
@@ -97,5 +144,3 @@ const Navigation = () => {
         </>
     )
 }
-
-export default Navigation;

@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
-import { Card, Col, Row, Button, Text, Modal, Image, Loading } from "@nextui-org/react";
-import { CONTRACT } from "../../secret.json";
-import NFTMarket from '../../artifacts/contracts/NFTMarket.sol/NFTMarket.json';
+import { useEffect, useState } from "react"
+import { Card, Col, Row, Button, Text, Modal, Image, Loading } from "@nextui-org/react"
+import { CONTRACT } from "../../secret.json"
+import NFTMarket from '../../artifacts/contracts/NFTMarket.sol/NFTMarket.json'
 import { ethers } from 'ethers'
+import { useRouter } from 'next/router'
 import Swal from 'sweetalert2'
 
 
 export default function NftSingleCard({ id }) {
+    const router = useRouter()
 
     const [isLoading, setIsLoading] = useState(false)
 
@@ -85,7 +87,9 @@ export default function NftSingleCard({ id }) {
                 html: `Transaction successfully <br><a href="https://rinkeby.etherscan.io/tx/${tx.hash}"><u>view on explorer</u></a> `,
                 icon: 'Success',
                 confirmButtonText: 'Done',
-            })
+            }).then(
+                router.push('/')
+            )
             setIsLoading(false)
         } catch (err) {
             closeHandler()

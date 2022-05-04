@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"
 import { ethers } from 'ethers'
-import { Grid, Row, Col, Text } from "@nextui-org/react";
-import OwnedSingleCard from "./OwnedSingleCard";
-import { CONTRACT } from "../../secret.json";
+import { Grid, Row, Col, Text } from "@nextui-org/react"
+import OwnedSingleCard from "./OwnedSingleCard"
+import { CONTRACT } from "../../secret.json"
 import NFTMarket from '../../artifacts/contracts/NFTMarket.sol/NFTMarket.json'
-import Swal from "sweetalert2";
+import Swal from "sweetalert2"
 import { useRouter } from 'next/router'
 
 

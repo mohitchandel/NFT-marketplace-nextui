@@ -1,23 +1,24 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"
 import { ethers } from 'ethers'
-import { Grid } from "@nextui-org/react";
-import NftSingleCard from "./NftSingleCard";
-import { CONTRACT } from "../../secret.json";
+import { Grid } from "@nextui-org/react"
+import NftSingleCard from "./NftSingleCard"
+import { CONTRACT } from "../../secret.json"
 import NFTMarket from '../../artifacts/contracts/NFTMarket.sol/NFTMarket.json'
-import Swal from "sweetalert2";
+import Swal from "sweetalert2"
 
 
 export default function NftGrid() {
 
     const [allItems, setAllItems] = useState([])
-
+    
+    async function fetchNfts() {
+        const provider = new ethers.providers.Web3Provider(window.ethereum)
+        let contract = new ethers.Contract(CONTRACT, NFTMarket.abi, provider)
+        let items = await contract.getAllItemsForSale()
+        setAllItems(items)
+    }
+    
     useEffect(() => {
-        async function fetchNfts() {
-            const provider = new ethers.providers.Web3Provider(window.ethereum)
-            let contract = new ethers.Contract(CONTRACT, NFTMarket.abi, provider)
-            let items = await contract.getAllItemsForSale()
-            setAllItems(items)
-        }
         fetchNfts()
     }, [])
 

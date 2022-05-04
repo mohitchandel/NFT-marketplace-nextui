@@ -20,7 +20,7 @@ contract NFTMarket is ERC721URIStorage {
     }
     mapping(uint256 => Item) public items;
 
-    constructor() ERC721("Bottels", "BTL") {}
+    constructor() ERC721("Anime", "ANM") {}
 
     function createToken(address to, string memory tokenURI, uint256 _tokenID) internal {
         _safeMint(to, _tokenID);
