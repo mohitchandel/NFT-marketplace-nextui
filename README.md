@@ -4,7 +4,7 @@ This Project is deployed on the Rinkeby testnet
 
 Deployed Smart Contract: [0xB1726Aec6B81349e77d8D48e575e51a33E82D4B2](https://rinkeby.etherscan.io/address/0xB1726Aec6B81349e77d8D48e575e51a33E82D4B2)
 
-Live Demo -> 
+Live Demo -> https://nft-marketplace-nextui.vercel.app/
 
 ### Usage
 How to clone and run this project
@@ -12,7 +12,7 @@ How to clone and run this project
 - Installing dependencies : `npm install`
 - Compile the smart contracts with Hardhat : `npx hardhat compile`
 - Run the tests : `npx hardhat test`
-- Deploy contract to network : `npx hardhat run --network rinkeby scripts/deploy.js`
+- Deploy contract to network : `npx hardhat run --network rinkeby scripts/deploy.js` (With account private key)
 
 ### About
 
