@@ -16,7 +16,7 @@ How to clone and run this project
 
 ### About
 
-This is dummy NFT market place deployed on rinkeby test net using solidity for smart contract and Next.js and NextUI for frontend. In this project user can buy, sell and create their own NFTs and can also resell bought NFTs on new price.
+This is dummy NFT market place deployed on rinkeby test net using solidity for smart contract and [Next.js](https://nextjs.org/) and [NextUI](https://nextui.org/) for frontend. In this project user can buy, sell and create their own NFTs and can also resell bought NFTs on new price.
 
 
 #### Features
