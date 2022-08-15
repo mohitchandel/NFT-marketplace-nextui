@@ -4,8 +4,6 @@ This Project is deployed on the Rinkeby testnet
 
 Deployed Smart Contract: [0xB1726Aec6B81349e77d8D48e575e51a33E82D4B2](https://rinkeby.etherscan.io/address/0xB1726Aec6B81349e77d8D48e575e51a33E82D4B2)
 
-Live Demo -> https://nft-marketplace-nextui.vercel.app/
-
 ### Usage
 How to clone and run this project
 - Clone this repository : git clone https://github.com/mohitchandel/NFT-marketplace-nextui.git
